@@ -1,5 +1,5 @@
 # 月报生成手册（深文档 E）
-> 本副本为 Git 仓库内参考版；**权威在腾讯文档**（file_id DV0pxbkxBaU94V0tz，URL 见本地 manifest.json，云端自动化 prompt 引用），改动须同步腾讯文档。
+> **权威在 Git 仓库**（本文档）。腾讯文档 file_id DV0pxbkxBaU94V0tz 由 `sync_de.py` 从本文档同步（云端自动化 prompt 引用腾讯文档，无 git；改本文档后必须运行 `python3 sync_de.py E`）。
 文档性质：生成月度总结时使用。月报由「云端自动化每月生成模板（含部门概况与工作总结初稿）+ 组员分布式填写各自部分」协作完成。本文档是给 AI 的执行手册。
 流程版本：以 Sheet「流程版本」/ B 文档《AI启动指引》为准
 维护者：流程发起人（policy=2 只读）

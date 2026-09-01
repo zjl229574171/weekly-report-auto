@@ -1,0 +1,11 @@
+# Git 仓库 .gitignore
+# AI 记忆目录（不版本化）
+.workbuddy/
+# 临时文件
+*.tmp
+*.log
+*.swp
+.DS_Store
+# Python 缓存
+__pycache__/
+*.pyc

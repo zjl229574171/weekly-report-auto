@@ -12,3 +12,9 @@
 | _weiyun_params.py | 微云上传 SHA1 参数计算脚本（传图时用，已通过测试向量校验） |
 
 版本更新：按 B_启动指引.md 的版本检查流程执行；更新会清理本目录全部内容并重建。
+
+---
+本仓库：周报/月报流程文档的 Git 版试点。
+- 版本：以 git commit / tag 记录（5.10 为初始基线）
+- 数据与 PPT 产物仍在腾讯文档（Sheet《微波周报数据》/ Slides），不在本仓库
+- 更新方式：git add → git commit → git push；组员/AI 启动时 git pull

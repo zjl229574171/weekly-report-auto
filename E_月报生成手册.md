@@ -1,7 +1,7 @@
 # 月报生成手册（深文档 E）
-> 本副本为 Git 仓库内参考版；**权威在腾讯文档**（https://docs.qq.com/doc/DV0pxbkxBaU94V0tz，云端自动化 prompt 引用），改动须同步腾讯文档。
+> 本副本为 Git 仓库内参考版；**权威在腾讯文档**（file_id DV0pxbkxBaU94V0tz，URL 见本地 manifest.json，云端自动化 prompt 引用），改动须同步腾讯文档。
 文档性质：生成月度总结时使用。月报由「云端自动化每月生成模板（含部门概况与工作总结初稿）+ 组员分布式填写各自部分」协作完成。本文档是给 AI 的执行手册。
-流程版本：以 Git 仓库 tag / B 文档《AI启动指引》为准
+流程版本：以 Sheet「流程版本」/ B 文档《AI启动指引》为准
 维护者：流程发起人（policy=2 只读）
 ## 〇、职责划分（AI 视角）
 本文档是给 AI 的执行手册，AI 按「四、组员个人生成」帮助组员填写月报本人部分。执行者边界如下：
@@ -28,7 +28,7 @@ PART03 成员页内容格式与周报一致：红小标题 #C00000 16pt =「项�
 自检（写完后必做）：① 无约 1/4 页高空白（有则调布局消除）② 项目顺序连续 ③ 图不遮文字 ④ 样式符合
 生成后必须 manage.set_privilege(policy=3) 开权限（见 C 文档已知坑 12）
 ## 二、月报母版（发起人维护）
-母版《微波载荷定标室·月报母版（勿编辑）》 file_id WbXAaHMvEEGD ， https://docs.qq.com/slide/DV2JYQWFITXZFRUdE（位于「周报流程自动化」文件夹 WHisrjuWOgeI），唯一克隆源，policy=2 只读保护，绝不修改
+母版《微波载荷定标室·月报母版（勿编辑）》 file_id WbXAaHMvEEGD（URL 见 manifest.json）（位于「周报流程自动化」文件夹 WHisrjuWOgeI），唯一克隆源，policy=2 只读保护，绝不修改
 母版结构：
 封面页（华云星地通 / 微波载荷定标室YYYY年MM月总结 / YYYY.MM）
 目录页（01 部门概况 / 02 {{月份}}部门工作总结 / 03 成员成果展示，无 04）

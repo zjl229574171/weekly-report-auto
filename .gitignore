@@ -9,3 +9,6 @@
 # Python 缓存
 __pycache__/
 *.pyc
+
+# 本地生成的 manifest（含敏感链接，不入仓库）
+manifest.json

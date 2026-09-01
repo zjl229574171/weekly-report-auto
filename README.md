@@ -12,13 +12,18 @@
 | E_月报生成手册.md | 月报生成手册**参考副本**（权威在腾讯文档，云端自动化读） |
 | CODEBUDDY.md | 工作区入口（clone 后置于工作区根目录，AI 自动加载） |
 | _weiyun_params.py | 微云上传 SHA1 参数计算脚本（已通过测试向量校验） |
-| manifest.json | 腾讯文档源链接记录（参考用；版本以 git tag 为准） |
+| manifest.json.template | manifest 占位模板（真实 manifest.json 由初始化时用「初始化文档」链接生成，不入仓库） |
+
+## 安全边界
+
+- **本仓库不含任何腾讯文档 URL**（可安全公开）。真实链接在「初始化文档」（机密，腾讯文档）与本地生成的 manifest.json 中。
+- file_id / sheet_id 为内部标识符，保留在文档中供 AI 调用工具用。
 
 ## 版本与更新
 
-- 版本：`git tag`（当前 v5.10）；历史见 `git log`
-- 更新：`git pull`（AI 启动时按 B 文档 1.2 执行）
-- 修改：发起人 `git add → git commit → git tag → git push`
+- 版本权威：Sheet《微波周报数据》「流程版本」子表；`git tag` 作记录（当前 v5.10）
+- 更新：AI 启动时读 Sheet「流程版本」↔ 本地 manifest.json version → 不同则 `git pull`（B 文档 1.2）
+- 修改：发起人 `git add → git commit → git tag → git push` + 在 Sheet「流程版本」登记
 - D/E 改动须同步腾讯文档（自动化执行依据）；详见 B 文档「二A、版本修改流程」
 
 ## 边界

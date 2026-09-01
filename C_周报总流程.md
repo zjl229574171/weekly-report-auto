@@ -10,17 +10,17 @@ Sheet 资源清单（恒定）
 | 资源 | 值 | 说明 |
 |---|---|---|
 | Sheet 《微波周报数据》 file_id | WcPXBJrdsaWL | 唯一数据真相源 |
-| Sheet URL | https://docs.qq.com/sheet/DV2NQWEJKcmRzYVdM | 恒定 |
+| Sheet URL | 见本地 manifest.json（由初始化文档生成） | 恒定 |
 | 子表「周报记录」 sheet_id | HPUTdN | 每人每条工作一行 |
 | 子表「项目词表」 sheet_id | BB08J2 | 项目归属，自动生长 |
 | 子表「本周模板」 sheet_id | WQ6cAq | 各周期模板指针（动态  file_id  的唯一权威来源） |
-| 样例页《周报个人页 · 标准样例》 | file_id WdkegYEAmUCz ， https://docs.qq.com/slide/DV2RrZWdZRUFtVUN6 | 版式权威参照（发起人维护；组员只读不写） |
+| 样例页《周报个人页 · 标准样例》 | file_id WdkegYEAmUCz（URL 见 manifest.json） | 版式权威参照（发起人维护；组员只读不写） |
 | 子表「花名册」 sheet_id | CM9sA2 | A 列 = 姓名，一行一人 |
-| 子表「流程版本」 | （ sheet_id  以实际为准） | 流程版本号，启动协议用 |
-| 母版《微波周报 · 母版（勿编辑）》 | file_id WAQPBCEcOnDw ， https://docs.qq.com/slide/DV0FRUEJDRWNPbkR3 | 唯一克隆源，绝不修改；共  2  页：第  1  页 = 占位符页（ {{ 姓名 }}/{{ 周次 }} ，克隆源），第  2  页 = 标准样例页（格式说明，只读不写） |
+| 子表「流程版本」 | （ sheet_id  以实际为准，用 get_sheet_info 按名查） | 流程版本号，启动协议用 |
+| 母版《微波周报 · 母版（勿编辑）》 | file_id WAQPBCEcOnDw（URL 见 manifest.json） | 唯一克隆源，绝不修改；共  2  页：第  1  页 = 占位符页（ {{ 姓名 }}/{{ 周次 }} ，克隆源），第  2  页 = 标准样例页（格式说明，只读不写） |
 
 各周期模板 file_id 是动态的，权威来源永远是「本周模板」子表，不要存死链接。
-流程类云端文档统一收纳于「周报流程自动化」文件夹：https://docs.qq.com/desktop/mydoc/folder/WHisrjuWOgeI（母版、各周期模板、Sheet《微波周报数据》、流程手册均在其中；新建流程文档一律入此文件夹）。
+流程类云端文档统一收纳于「周报流程自动化」文件夹（文件夹 id WHisrjuWOgeI，URL 见 manifest.json；母版、各周期模板、Sheet《微波周报数据》、流程手册均在其中；新建流程文档一律入此文件夹）。
 ## 二、周期口径
 - 周报每周四汇报；一个周期 = 上周五 ~ 本周四（共 7 天）。
 - 周次格式（全系统唯一标准）：YYYY-MM-DD~YYYY-MM-DD，如 2026-08-21~2026-08-27 / 2026-08-28~2026-09-03。数据表与幻灯片 {{周次}} 占位符统一用此格式，人工补录也用此格式。
@@ -134,7 +134,7 @@ B. 写进「周报记录」(HPUTdN)
 8. 组员绝不点"保存到我的文档"：直接编辑原文件；保存副本=原模板空置+指针失效+月报缺数
 9. slide_add_image 大参数（base64）走命令行会超长报错——错误信息因 shell 而异（Git Bash 报 "Argument list too long"，Windows 原生 CreateProcess 才报 WinError 206 ≤32767 字符）；结论一致：大参数一律用 import tencentdocs as td; td.call_tool() 绕开
 10. slide-mcp 删页工具名是 slide_remove_slide（不是 slide_delete_page）；删 shape 用 slide_remove_shapes
-11. URL 手拼陷阱：分享 URL = D + base64(file_id) 编码格式；docs.qq.com/slide/<原始file_id> 这种自拼地址不报错但永远转圈打不开。一律用 API 返回的 url 字段
+11. URL 手拼陷阱：分享 URL = D + base64(file_id) 编码格式；拿原始 file_id 手拼分享 URL 打开会永远转圈。一律用 API 返回的 url 字段
 12. 新文件默认私有：copy_file/create_file 产物 policy=0（仅创建者），必须补 manage.set_privilege(policy=3) 才能全组打开
 13. slide_get_info 的页数字段是 slide_count（不是 page_count）；slide_find_replace_text 一次只处理一页（page_index 从 0 起），必须逐页调用
 14. manage.copy_file 返回的键名是 id（manage.create_file 返回的是 file_id），两者不一致

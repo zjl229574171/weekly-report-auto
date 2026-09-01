@@ -1,6 +1,6 @@
 # 周报流程 · AI启动指引（总入口）
 文档性质：本文档是周报流程 AI 侧的唯一总入口，存放于 Git 仓库（目录名 weekly-report-auto/，即本仓库工作副本）。AI 读本仓库内的本文档，按启动协议与初始化协议执行，再按索引跳转深文档执行业务流程。
-版本：以 git tag 为准（当前 v5.10）；历史见 git log。腾讯文档备份版 B：https://docs.qq.com/doc/DV2pvR2xDV3pqUUNP（仅备份/参考，权威以本仓库为准）
+版本：权威版本号以 Sheet《微波周报数据》「流程版本」子表为准；git tag 作记录（当前 v5.10）。腾讯文档备份链接见本地 manifest.json（仅备份/参考，权威以本仓库为准）
 维护者：流程发起人（改本文档 = 改仓库文件 → git commit / push；组员只读）
 适用平台：WorkBuddy（需已连接「腾讯文档」与「微云」两个连接器，均为使用者本人账号授权）
 ## 〇、给 AI 的第一条指令（必读）
@@ -29,13 +29,15 @@ service：slide-mcp(PPT) / sheet-mcp(表格) / doc-mcp(Word) / tencent-docs(文�
 | 本地有 weekly-report-auto/ 目录 | 已初始化 | → 读 README.md 了解目录 → 走 1.2 版本检查 |
 | 无仓库地址且本地无目录 | 降级 | 提示用户：请提供 Git 仓库地址；若无远程仓库，可降级用腾讯文档备份（周报流程/ 目录）初始化，标注"只读备份模式" |
 ### 1.2 版本检查（已初始化时）
-配置了远程仓库（git remote）→ 执行 git fetch，对比本地 HEAD 与 origin/HEAD（或 tag）：
+读 Sheet《微波周报数据》「流程版本」子表（子表 sheet_id 用 sheet-mcp get_sheet_info 按名查找），取当前权威版本号（一行数据，格式如 5.10，及"是否强制"标记）
+读本地 manifest.json 的 version 字段
+按下表决策：
 | 比对结果 | 动作 |
 |---|---|
-| 本地 HEAD == 远程 HEAD | 静默通过，直接读本地《C_周报总流程.md》开工 |
-| 本地落后远程 | 单轮询问：向用户一句话说明"检测到新版本（本地 <commit> → 远程 <commit>）。是否更新？"用户答复更新 → git pull → 一句话告知完成；不更新 → 继续用本地版本。只问这一轮 |
-| 未配置远程仓库 | 以本地 git log 为准继续业务，结束时提醒用户"仓库未配置远程，无法自动更新" |
-| git 命令失败/网络异常 | 降级运行：用本地仓库版本继续业务，结束时提醒"本次未能核对仓库更新" |
+| 一致 | 静默通过，直接读本地《C_周报总流程.md》开工 |
+| 版本不同（大小版本均适用） | 单轮询问：向用户一句话说明"检测到新版本（本地 x.x → 云端 y.y，更新说明：…）。是否更新？"用户答复更新 → git pull（拉取流程文档最新版）→ 更新本地 manifest.json 的 version 字段 → 一句话告知完成；用户答复不更新 → 继续用本地版本跑业务。只问这一轮 |
+| Sheet 读不到/网络失败 | 降级运行：以本地 manifest 版本继续业务，结束时提醒用户"本次未能联网核对流程版本" |
+| git pull 失败/冲突 | 不强行覆盖本地改动，提示用户按初始化协议重新 clone（先备份本地改动） |
 ### 1.3 纪律
 版本检查每次会话只做一次，不要在会话中途反复 git fetch
 更新 = git pull，只动 weekly-report-auto/ 目录内文件；绝不动 Sheet 任何数据、绝不清理工作区其他内容
@@ -51,10 +53,11 @@ weekly-report-auto/
 ├─ README.md                ← 目录说明
 ├─ CODEBUDDY.md             ← 工作区入口（clone 后置于工作区根目录，AI 自动加载）
 ├─ _weiyun_params.py        ← 微云上传 SHA1 参数计算脚本（已通过测试向量校验）
-└─ manifest.json            ← 腾讯文档源链接记录（参考用，版本以 git 为准）
+└─ manifest.json            ← 本地生成（由初始化文档配置真实链接；不入仓库，.gitignore 排除；version 字段=Sheet「流程版本」当前值）
 ### 2.2 执行步骤
 前置确认：确认用户已连接「腾讯文档」「微云」两个连接器；未连接则引导用户在 WorkBuddy 中连接（各自用自己的账号授权），连好后再继续
 git clone <仓库地址> 到工作区 → 得到 weekly-report-auto/ 目录（若已存在则 git pull 更新）
+配置 manifest.json：复制仓库内 manifest.json.template 为 manifest.json，把「初始化文档」中提供的腾讯文档链接填入 source 各字段，version 字段=Sheet「流程版本」当前值；manifest.json 已被 .gitignore 排除，不会进 git
 自检（必须执行）：
 - 文件齐全：B_启动指引.md / C_周报总流程.md / D_模板构建手册.md / E_月报生成手册.md / README.md / CODEBUDDY.md / _weiyun_params.py 均存在
 - _weiyun_params.py 测试向量校验：创建测试文件（内容 abc、无换行），运行 python _weiyun_params.py <测试文件>，输出必须精确等于：
@@ -81,8 +84,8 @@ CODEBUDDY.md 归位：确认工作区根目录有 CODEBUDDY.md（内容=仓库�
 git clone / git pull 天然幂等，可安全重复执行（换电脑、本地丢失、重装时重跑即可）。更新一律用 git pull，禁止手动逐段编辑仓库文件（会破坏与远程的一致性）。
 ## 二A、版本修改流程（发起人 / 维护者用）
 流程文档分两类，按对应流程修改，一处不落：
-- **B/C/README/CODEBUDDY/_weiyun_params.py（Git 权威）**：改仓库文件 → git add → git commit → git tag（升版本，如 v5.11）→ git push（若有远程）。版本号 = git tag；不再依赖 Sheet「流程版本」（如需保留更新说明，可选登记）。
-- **D/E（腾讯文档权威，云端自动化读取）**：改腾讯文档（D：DV1p0Z0xIVERSU095；E：DV0pxbkxBaU94V0tz）→ 同步更新仓库内 D/E 副本 → git commit 记录一致。**D/E 的任何改动必须同步腾讯文档，否则自动化执行的是旧规则。**
+- **B/C/README/CODEBUDDY/_weiyun_params.py（Git 权威）**：改仓库文件 → git add → git commit → git tag（如 v5.11）→ git push（若有远程）；**同步在 Sheet《微波周报数据》「流程版本」子表登记新版本号**（内容修正/增补 → 小版本 +0.1，是否强制=否；协议/不兼容改动 → 大版本 +1，是否强制=是）。版本权威 = Sheet「流程版本」。
+- **D/E（腾讯文档权威，云端自动化读取）**：改腾讯文档（file_id D：DV1p0Z0xIVERSU095；E：DV0pxbkxBaU94V0tz，URL 见本地 manifest.json）→ 同步更新仓库内 D/E 副本 → git commit 记录一致。**D/E 的任何改动必须同步腾讯文档，否则自动化执行的是旧规则。**
 CODEBUDDY.md 位于仓库内（clone 后置于工作区根）：直接改仓库文件 → commit；禁止手工改工作区副本（会被 git pull 覆盖）。
 ## 三、深文档索引
 | 代号 | 文档 | 权威载体 | 读者 | 何时读 |
@@ -90,11 +93,7 @@ CODEBUDDY.md 位于仓库内（clone 后置于工作区根）：直接改仓库�
 | C | 《周报总流程》 | Git 仓库 | 组员日常必读 | 每次写周报前（读仓库内副本） |
 | D | 《模板构建手册》 | 腾讯文档（自动化读） | 发起人 / 云端自动化 | 建周模板时（仓库副本仅参考） |
 | E | 《月报生成手册》 | 腾讯文档（自动化读） | 发起人 / 受指派者 | 生成月报时（仓库副本仅参考） |
-在线链接（发起人维护用）：
-C 周报总流程：https://docs.qq.com/doc/DV0V5a1RMb3Fmcm1K
-D 模板构建手册：https://docs.qq.com/doc/DV1p0Z0xIVERSU095
-E 月报生成手册：https://docs.qq.com/doc/DV0pxbkxBaU94V0tz
-Sheet《微波周报数据》：https://docs.qq.com/sheet/DV2NQWEJKcmRzYVdM
+在线链接（机密，不随仓库分发）：C/D/E/Sheet 的腾讯文档 URL 见本地 manifest.json（由「初始化文档」生成，仅供发起人/初始化使用；仓库内不出现任何腾讯文档 URL）
 ## 四、附录：微云上传参数脚本（测试向量）
 脚本 _weiyun_params.py 以仓库文件为准（纯 Python 标准库）。测试向量（内容为 abc、无换行的 3 字节文件）供 2.2 自检：
 | 字段 | 期望值 |

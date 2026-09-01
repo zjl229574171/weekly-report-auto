@@ -15,6 +15,7 @@
 腾讯文档系列（PPT/表格/文档/文件）→ 走脚本：
 python3 tencentdocs.py tdoc_call <service> <tool> '<json>'
 service：slide-mcp(PPT) / sheet-mcp(表格) / doc-mcp(Word) / tencent-docs(文件管理)
+★ 脚本定位（WorkBuddy 内置，随腾讯文档插件安装，版本号可变）：路径模式 ~/.workbuddy/plugins/cache/workbuddy-builtin/tencent-docs-plugin/*/skills/tencent-docs/tencentdocs.py；定位命令 ls ~/.workbuddy/plugins/cache/workbuddy-builtin/tencent-docs-plugin/*/skills/tencent-docs/tencentdocs.py；调用前先 cd 到该目录，或在 Python 里 glob 找到后 import tencentdocs。
 ★ 需要什么功能自己找：tdoc_list <service> 列全部工具、tdoc_schema <service> <tool> 查参数，先用后调
 大参数：import tencentdocs as td; td.call_tool()
 微云（weiyun.*）→ MCP 工具，真实名 mcp__tencent-weiyun__weiyun.*，先 ToolSearch 加载再调

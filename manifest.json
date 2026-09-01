@@ -1,6 +1,7 @@
 {
   "version": "5.10",
-  "updated_at": "2026-09-01T10:48:00+08:00",
+  "note": "Git 版：版本以 git tag 为准（当前 v5.10），本字段仅存档；source 为腾讯文档源链接（D/E 权威、Sheet 数据）。",
+  "updated_at": "2026-09-01T11:50:00+08:00",
   "source": {
     "B": "https://docs.qq.com/doc/DV2pvR2xDV3pqUUNP",
     "C": "https://docs.qq.com/doc/DV0V5a1RMb3Fmcm1K",

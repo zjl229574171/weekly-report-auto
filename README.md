@@ -22,7 +22,7 @@
 
 ## 版本与更新
 
-- 版本权威：Sheet《微波周报数据》「流程版本」子表；`git tag` 作记录（当前 v5.10）
+- 版本权威：Sheet《微波周报数据》「流程版本」子表；`git tag` 作记录（当前 v0.5.10）。版本号三段式「发布.大修.小更」，进位规则见 B 文档「二A」
 - 更新：AI 启动时读 Sheet「流程版本」↔ 本地 manifest.json version → 不同则 `git pull`（B 文档 1.2）
 - 修改：发起人 `git add → git commit → git tag → git push` + 在 Sheet「流程版本」登记
 - D/E 改动须同步腾讯文档（自动化执行依据）；详见 B 文档「二A、版本修改流程」

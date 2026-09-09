@@ -9,7 +9,7 @@
 需要初始化时 → 见「二、初始化协议」
 初始化完成或无需更新后 → 读本地《C_周报总流程.md》→ 按用户请求执行业务流程
 本文档只在启动时读；日常业务流程以本地《C_周报总流程.md》为准
-触发词：用户说「记录工作 / 写周报 / 周报 / 月报 / 生成PPT」等时，同样按启动协议执行（工作区根目录 CODEBUDDY.md 会自动引导）；记录一律写入腾讯文档 Sheet《微波周报数据》「周报记录」，禁止创建本地 md 代替。
+触发词：用户说「记录工作 / 写周报 / 周报 / 月报 / 生成PPT」等时，同样按启动协议执行（工作区根目录 CODEBUDDY.md 会自动引导）；记录一律写入腾讯文档 Sheet《微波周报数据》的本人子表「工作记录-姓名」（每成员一张，见 C 文档 §一），禁止创建本地 md 代替。
 ## 〇A、工具调用路径（新会话必读）
 流程中的 slide_*/sheet_*/doc.*/manage.*/get_content/weiyun.* 都不在对话工具列表里，按下面路径调用（**仅数据层与 PPT 产物层需要**；流程文档读取走 git，不依赖本脚本）：
 腾讯文档系列（PPT/表格/文档/文件）→ 走脚本：
@@ -52,36 +52,33 @@ weekly-report-auto/
 ├─ C_周报总流程.md           ← 组员日常必读流程规范
 ├─ D_模板构建手册.md         ← 模板构建手册副本（权威在腾讯文档，自动化读；本副本仅本地参考）
 ├─ E_月报生成手册.md         ← 月报生成手册副本（权威在腾讯文档，自动化读；本副本仅本地参考）
+├─ CODEBUDDY.md.template    ← 工作区入口模板（初始化时复制为工作区根 CODEBUDDY.md 并填入工作区路径；随仓库版本管理）
 ├─ README.md                ← 目录说明
 ├─ _weiyun_params.py        ← 微云上传 SHA1 参数计算脚本（已通过测试向量校验）
 └─ manifest.json            ← 本地生成（由初始化文档配置真实链接；不入仓库，.gitignore 排除；version 字段=Sheet「流程版本」当前值）
-（注：CODEBUDDY.md 不随仓库分发，由初始化时按「初始化文档」模板生成到工作区根目录）
+（注：CODEBUDDY.md 本体不随仓库分发，由初始化时按 CODEBUDDY.md.template 生成到工作区根目录并填入实际工作区路径）
 ### 2.2 执行步骤
 前置确认：确认用户已连接「腾讯文档」「微云」两个连接器；未连接则引导用户在 WorkBuddy 中连接（各自用自己的账号授权），连好后再继续
 git clone <仓库地址> 到工作区 → 得到 weekly-report-auto/ 目录（若已存在则 git pull 更新）
 配置 manifest.json：复制仓库内 manifest.json.template 为 manifest.json，把「初始化文档」中提供的腾讯文档链接填入 source 各字段，version 字段=Sheet「流程版本」当前值；manifest.json 已被 .gitignore 排除，不会进 git
 自检（必须执行）：
-- 文件齐全：B_启动指引.md / C_周报总流程.md / D_模板构建手册.md / E_月报生成手册.md / README.md / _weiyun_params.py / manifest.json.template 均存在
-- _weiyun_params.py 测试向量校验：创建测试文件（内容 abc、无换行），运行 python _weiyun_params.py <测试文件>，输出必须精确等于：
+- 文件齐全：B_启动指引.md / C_周报总流程.md / D_模板构建手册.md / E_月报生成手册.md / CODEBUDDY.md.template / README.md / _weiyun_params.py / manifest.json.template 均存在
+- _weiyun_params.py 测试向量校验：创建测试文件（内容 abc、无换行），运行 python _weiyun_params.py <测试文件>，输出必须精确等于单行 JSON（文件名随实际测试文件名，其余字段恒定）：
 ```
-file_sha = a9993e364706816aba3e25717850c26c9cd0d89d
-file_md5 = 900150983cd24fb0d6963f7d28e17f72
-block_sha_list = ["a9993e364706816aba3e25717850c26c9cd0d89d"]
-check_sha = 0123456789abcdeffedcba9876543210f0e1d2c3
-check_data = YWJj
+{"filename": "<测试文件名>", "file_size": 3, "file_sha": "a9993e364706816aba3e25717850c26c9cd0d89d", "file_md5": "900150983cd24fb0d6963f7d28e17f72", "block_sha_list": ["a9993e364706816aba3e25717850c26c9cd0d89d"], "check_sha": "0123456789abcdeffedcba9876543210f0e1d2c3", "check_data": "YWJj"}
 ```
 （任一字段不符 = 脚本被损坏，向用户报告，初始化中止）
 - 校验通过后删除测试文件
-生成 CODEBUDDY.md：按「初始化文档」中的 CODEBUDDY.md 模板，在工作区根目录生成（AI 每次会话自动加载）
+生成 CODEBUDDY.md：复制仓库内 CODEBUDDY.md.template 到工作区根目录，把模板中 {{WORKSPACE}} 占位符替换为实际工作区绝对路径（AI 每次会话自动加载）
 降级模式：无 git 环境或仓库不可达 → 从腾讯文档备份（周报流程/ 目录）镜像，标注"只读备份模式"，并提醒用户配置 Git 仓库地址
 收尾报告：向用户汇报——已 clone/更新哪些文件、当前 git 版本、自校验结果；然后读本地《C_周报总流程.md》，等待或直接执行用户请求的业务
 ### 2.3 边界（静态本地化，动态永远读云端）
 | 内容 | 处理 |
 |---|---|
-| B/C 流程文档、README、_weiyun_params.py | Git 仓库（本协议） |
-| CODEBUDDY.md | 不随仓库分发，初始化时按「初始化文档」模板生成到工作区根目录 |
+| B/C 流程文档、README、CODEBUDDY.md.template、_weiyun_params.py | Git 仓库（本协议） |
+| CODEBUDDY.md | 模板 CODEBUDDY.md.template 随仓库分发；本体由初始化时复制到工作区根目录并填入工作区路径 |
 | D/E 手册 | 仓库存副本（本地参考）；**权威在腾讯文档**（云端自动化读腾讯文档） |
-| Sheet《微波周报数据》所有子表（周报记录/项目词表/本周模板/花名册/流程版本） | 永不本地化，每次实时读云端 |
+| Sheet《微波周报数据》所有子表（工作记录-姓名×N / 项目词表 / 考勤记录 / 本周模板 / 本月模板 / 花名册 / 流程版本；旧周报记录单表过渡期保留） | 永不本地化，每次实时读云端 |
 | 每周 PPT 模板、母版 | 永不本地化，从「本周模板」子表取动态 file_id 直连 |
 ### 2.4 幂等性
 git clone / git pull 天然幂等，可安全重复执行（换电脑、本地丢失、重装时重跑即可）。更新一律用 git pull，禁止手动逐段编辑仓库文件（会破坏与远程的一致性）。
@@ -93,7 +90,7 @@ git clone / git pull 天然幂等，可安全重复执行（换电脑、本地�
 流程文档分两类，按对应流程修改，一处不落：
 - **B/C/README/_weiyun_params.py（Git 权威）**：改仓库文件 → git add → git commit → git tag（如 v0.5.11）→ git push（若有远程）；**同步在 Sheet《微波周报数据》「流程版本」子表登记新版本号**（按上方三段式进位规则决定改哪段与是否强制）。版本权威 = Sheet「流程版本」。
 - **D/E（Git 权威 + sync_de.py 同步云端）**：改仓库内 D_模板构建手册.md / E_月报生成手册.md → 运行 `python3 sync_de.py`（读本地 manifest.json 的 D/E 链接，md 转 HTML 覆盖腾讯文档对应 file_id）→ git commit → git tag → git push。**改完 D/E 必须运行 sync_de.py，否则云端自动化（6553649 读 D / 6750800 读 E）执行旧规则。** 云端自动化在云端运行、无 git，只能读腾讯文档，因此 D/E 内容始终以腾讯文档为准、来源以仓库为准。
-CODEBUDDY.md 由初始化生成（模板见「初始化文档」），不随仓库分发；改模板 → 改初始化文档 → 已初始化用户重新生成。
+CODEBUDDY.md 由初始化时复制 CODEBUDDY.md.template 生成（模板随仓库版本管理）；改模板 → 改仓库内 CODEBUDDY.md.template（git 流程）→ 已初始化用户重新生成（复制模板到工作区根 + 填 {{WORKSPACE}}）。
 ## 二B、版本号格式历史（三段式切换记录）
 2026-09-02：版本号由两段式 `x.y`（如 5.10）统一切换为三段式「发布.大修.小更」`0.x.y`。Sheet「流程版本」历史行同步平移（5.2→0.5.2 … 5.10→0.5.10），数字语义不变，仅补发布段前缀 0；git tag 起点 v0.5.10。
 ## 三、深文档索引
@@ -114,7 +111,7 @@ CODEBUDDY.md 由初始化生成（模板见「初始化文档」），不随仓�
 | check_sha | 0123456789abcdeffedcba9876543210f0e1d2c3 |
 | check_data | YWJj（abc 的 base64） |
 ## 四A、附录：CODEBUDDY.md 模板
-CODEBUDDY.md 不随仓库分发，由初始化时 AI 按「初始化文档」中的模板生成到工作区根目录（AI 每次会话自动加载）。维护方式见「二A」与初始化文档。
+CODEBUDDY.md 不随仓库分发，模板为仓库内 CODEBUDDY.md.template（git 权威）；初始化/版本更新时复制到工作区根目录并填入 {{WORKSPACE}} 占位符（AI 每次会话自动加载）。维护方式见「二A」。
 ## 附：维护者备忘（发起人专用，组员忽略）
-改 Git 权威文档（B/C/README/脚本）→ git add/commit/tag/push + Sheet「流程版本」登记；改 D/E → 改仓库 md → `python3 sync_de.py`（同步腾讯文档，自动化读）→ git commit；改 CODEBUDDY 模板 → 改初始化文档。
+改 Git 权威文档（B/C/README/CODEBUDDY.md.template/脚本）→ git add/commit/tag/push + Sheet「流程版本」登记；改 D/E → 改仓库 md → `python3 sync_de.py`（同步腾讯文档，自动化读）→ git commit；CODEBUDDY.md 本体由初始化/更新时从 template 复制生成。
 腾讯文档备份（周报流程/ 目录）只作存档，不参与权威版本；以 Git 仓库为唯一权威。

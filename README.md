@@ -10,7 +10,7 @@
 | C_周报总流程.md | 组员日常必读的周报流程规范——**Git 权威** |
 | D_模板构建手册.md | 模板构建手册（**Git 权威**；云端自动化读腾讯文档，经 sync_de.py 同步） |
 | E_月报生成手册.md | 月报生成手册（**Git 权威**；云端自动化读腾讯文档，经 sync_de.py 同步） |
-| CODEBUDDY.md | 工作区入口（clone 后置于工作区根目录，AI 自动加载） |
+| CODEBUDDY.md.template | 工作区入口模板（初始化/版本更新时复制为工作区根 CODEBUDDY.md 并替换 {{WORKSPACE}}，AI 自动加载） |
 | _weiyun_params.py | 微云上传 SHA1 参数计算脚本（已通过测试向量校验） |
 | sync_de.py | D/E 同步脚本：仓库 md → 腾讯文档（读本地 manifest.json 的 D/E 链接，`python3 sync_de.py`） |
 | manifest.json.template | manifest 占位模板（真实 manifest.json 由初始化时用「初始化文档」链接生成，不入仓库） |

@@ -12,6 +12,7 @@ kq_import.py — 考勤月度导入（《微波载荷定标室.xlsx》→ Sheet�
     - 读回逐格比对自检
 
 口径（与 2026-08 实测数据一致，改动需同步 C 文档 §六A）：
+  当月总日数 = xlsx 表头第 5 行连续 MM/DD 列数（动态探测 28~31，不写死）
   应出勤天数 = 当月总日数 − xlsx 标记「休息」日数；应出勤时长 = 应出勤天数 × 9h
   单日：双卡 = 下班 − 上班；漏下班卡（只有上午卡）= 上班卡 ~ 12:00 → 「漏下午」；
        漏上班卡（只有下午卡）= 12:00 ~ 下班卡 → 「漏上午」；双漏（无卡）= 0 → 「无卡」
@@ -22,8 +23,12 @@ kq_import.py — 考勤月度导入（《微波载荷定标室.xlsx》→ Sheet�
 用法：
   python kq_import.py                     # --check：只计算并与 Sheet 现值比对，不写库
   python kq_import.py --write             # 计算并写入（同月已存在 → 覆盖该月块）
-  python kq_import.py --xlsx <路径> --month 2026-08 --write
+  python kq_import.py --xlsx <路径> --month 2026-09 --write
   python kq_import.py --show              # 只打印计算结果（不比对 Sheet）
+
+xlsx 定位：不带 --xlsx 时取 D:/temp/微波载荷定标室*.xlsx 中**最新修改**的一个（导出名常带
+月份后缀、历史文件会残留）；脚本会打印 [INFO] 实际来源路径，务必核对月份。回填历史月份请
+用 --xlsx 显式指定，避免误取最新月。
 
 依赖：WorkBuddy 本机运行（腾讯文档连接器已连）；python 需 openpyxl：
   pip install openpyxl   （本仓库脚本由 WorkBuddy 会话执行，自动使用隔离环境）
@@ -40,13 +45,31 @@ import kq_common as kc  # noqa
 COLS = ["月份", "姓名", "应出勤天数", "应出勤时长(h)", "实际出勤天数",
         "合计时长(h)", "漏卡次数", "异常摘要", "备注"]
 DEFAULT_XLSX = r"D:/temp/微波载荷定标室.xlsx"
+XLSX_GLOB = r"D:/temp/微波载荷定标室*.xlsx"
 
-# xlsx 结构常量（实测 2026-08：Sheet0，row5=日期表头 E..AI，row6 起 每人两行 上下班）
+
+def resolve_xlsx(explicit=""):
+    """定位考勤 xlsx：显式传入则原样使用；否则取 XLSX_GLOB 中**最新修改**的一个。
+
+    考勤系统导出文件常带月份后缀（如《微波载荷定标室9.xlsx》），历史月份文件会常驻
+    同目录，故按「最新 mtime」而非固定文件名；调用方必须打印解析出的路径核对月份，
+    回填历史月份时用 --xlsx 显式指定。
+    """
+    if explicit:
+        return explicit
+    import glob
+    hits = glob.glob(XLSX_GLOB)
+    if os.path.exists(DEFAULT_XLSX) and DEFAULT_XLSX not in hits:
+        hits.append(DEFAULT_XLSX)
+    if not hits:
+        return ""
+    return max(hits, key=os.path.getmtime)
+
+# xlsx 结构常量（实测 2026-08/2026-09：Sheet0，row5=日期表头 E..，row6 起 每人两行 上下班）
 DATE_ROW = 5          # 1-based
 COL_NAME = 2          # B
 COL_FLAG = 4          # D = 上班/下班
-COL_DAY0 = 5          # E = 每周期首日
-FULL_DAY = 31
+COL_DAY0 = 5          # E = 当月首日；天数由表头动态探测（28~31），不写死
 
 
 def hhmm_to_min(s):
@@ -79,15 +102,22 @@ def parse_xlsx(path):
         raise kc.KqError(f"xlsx 第2行未找到考勤周期日期（A2={cell(2,1)!r}），结构可能变化")
     month = f"{m.group(1)}-{m.group(2)}"
 
-    # 日期表头 row5 col E..：校验首日为 MM/01
+    # 日期表头 row5 col E..：动态探测天数（28~31），校验首日为 MM/01
+    # 注：不可写死 31——2 月/4 月/9 月等不足 31 天，写死会让表头校验越界报错（2026-10-08 修）
     dates = []
-    for c in range(COL_DAY0, COL_DAY0 + FULL_DAY):
+    c = COL_DAY0
+    while True:
         v = cell(DATE_ROW, c)
         if not re.match(r"^\d{2}/\d{2}$", v):
-            raise kc.KqError(f"xlsx 日期表头第{DATE_ROW}行第{c}列异常: {v!r}")
+            break
         dates.append(v)
+        c += 1
+    if not 28 <= len(dates) <= 31:
+        raise kc.KqError(
+            f"xlsx 日期表头第{DATE_ROW}行仅探测到 {len(dates)} 个日期列（应为 28~31），结构可能变化")
     if dates[0][-2:] != "01":
         raise kc.KqError(f"xlsx 日期表头首日应为当月1日，实际 {dates[0]}")
+    ndays = len(dates)
 
     people = []
     r = DATE_ROW + 1
@@ -95,11 +125,11 @@ def parse_xlsx(path):
         name = cell(r, COL_NAME)
         flag = cell(r, COL_FLAG)
         if name and flag == "上班":
-            up = [cell(r, c) for c in range(COL_DAY0, COL_DAY0 + FULL_DAY)]
-            down = [cell(r + 1, c) for c in range(COL_DAY0, COL_DAY0 + FULL_DAY)] if r + 1 <= ws.max_row else []
-            if len(down) != FULL_DAY:
+            up = [cell(r, c) for c in range(COL_DAY0, COL_DAY0 + ndays)]
+            down = [cell(r + 1, c) for c in range(COL_DAY0, COL_DAY0 + ndays)] if r + 1 <= ws.max_row else []
+            if len(down) != ndays:
                 raise kc.KqError(f"{name} 的下班行缺失或结构异常（row {r + 1}）")
-            daily = [(up[i], down[i], dates[i]) for i in range(FULL_DAY)]
+            daily = [(up[i], down[i], dates[i]) for i in range(ndays)]
             people.append({"name": name, "daily": daily})
             r += 2
         else:
@@ -249,17 +279,19 @@ def locate_month_block(td, file_id, sheet_id, month):
 
 def main():
     ap = argparse.ArgumentParser(description="考勤月度导入（xlsx → Sheet 考勤记录）")
-    ap.add_argument("--xlsx", default=DEFAULT_XLSX, help=f"考勤 xlsx 路径（默认 {DEFAULT_XLSX}）")
+    ap.add_argument("--xlsx", default="", help=f"考勤 xlsx 路径（缺省取 {XLSX_GLOB} 中最新修改的一个）")
     ap.add_argument("--month", default="", help="目标月份 YYYY-MM（默认从 xlsx 推断）")
     ap.add_argument("--write", action="store_true", help="写库（默认只 check 比对，不写）")
     ap.add_argument("--show", action="store_true", help="只打印计算结果，不比对 Sheet")
     args = ap.parse_args()
 
-    if not os.path.exists(args.xlsx):
-        print(f"[FAIL] xlsx 不存在：{args.xlsx}")
+    xlsx = resolve_xlsx(args.xlsx)
+    if not xlsx or not os.path.exists(xlsx):
+        print(f"[FAIL] xlsx 不存在：{xlsx or XLSX_GLOB}（用 --xlsx 显式指定路径）")
         return 1
+    print(f"[INFO] xlsx 来源：{xlsx}")
 
-    month_from_xlsx, people = parse_xlsx(args.xlsx)
+    month_from_xlsx, people = parse_xlsx(xlsx)
     month = args.month or month_from_xlsx
     if month != month_from_xlsx:
         print(f"[WARN] 指定月份 {month} 与 xlsx 周期 {month_from_xlsx} 不一致，按指定月份处理")
